@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="@android:color/white"
+    android:layout_margin="4dp"
+    android:elevation="2dp">
+
+    <ImageView
+        android:id="@+id/iv_rec_image"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center_horizontal"
+        android:src="@android:drawable/ic_media_play"/>
+
+    <TextView
+        android:id="@+id/tv_rec_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Product Name"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"
+        android:maxLines="1"/>
+
+    <TextView
+        android:id="@+id/tv_rec_price"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="$0.00"
+        android:textColor="@color/accent_color"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tv_rec_model"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Model"
+        android:textSize="12sp"
+        android:maxLines="1"/>
+
+    <ImageView
+        android:id="@+id/iv_rec_heart"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="end"
+        android:src="@android:drawable/btn_star_big_off"
+        android:layout_marginTop="4dp"/>
+
+</LinearLayout>

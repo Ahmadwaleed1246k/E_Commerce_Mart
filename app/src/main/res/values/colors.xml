@@ -15,9 +15,9 @@
     <color name="card_bg">#FFFFFF</color>
     
     <!-- Text Colors -->
-    <color name="text_main">#121212</color>
-    <color name="text_sub">#1A1A1A</color>
-    <color name="text_hint">#444444</color>
+    <color name="text_main">#000000</color>
+    <color name="text_sub">#000000</color>
+    <color name="text_hint">#222222</color>
     <color name="text_white">#FFFFFF</color>
     
     <!-- Form Fields -->

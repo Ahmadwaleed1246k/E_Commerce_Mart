@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Back Button -->
+        <ImageView
+            android:id="@+id/iv_back"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_arrow_forward"
+            android:rotation="180"
+            android:padding="4dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Product Image -->
+        <ImageView
+            android:id="@+id/iv_product_image"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:src="@android:drawable/ic_media_play"
+            android:scaleType="centerCrop"
+            android:background="#F5F5F5"/>
+
+        <!-- Product Name -->
+        <TextView
+            android:id="@+id/tv_product_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Product Name"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_main"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Product Price -->
+        <TextView
+            android:id="@+id/tv_product_price"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="$0.00"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/accent_color"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Product Model -->
+        <TextView
+            android:id="@+id/tv_product_model"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Model"
+            android:textSize="14sp"
+            android:textColor="@color/text_sub"
+            android:layout_marginTop="4dp"/>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Description Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Description"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_main"/>
+
+        <!-- Product Description -->
+        <TextView
+            android:id="@+id/tv_product_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Product description goes here..."
+            android:textSize="14sp"
+            android:textColor="@color/text_main"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Buy Now Button -->
+        <Button
+            android:id="@+id/btn_buy_now"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Buy Now"
+            android:backgroundTint="@color/primary_color"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"/>
+
+    </LinearLayout>
+
+</ScrollView>
