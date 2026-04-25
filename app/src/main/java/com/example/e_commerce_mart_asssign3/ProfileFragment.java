@@ -77,25 +77,17 @@ public class ProfileFragment extends Fragment {
     }
 
     private void performLogout() {
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null) {
-            String uid = user.getUid();
-            
-            // Remove user info from Realtime DB as requested
-            mDatabase.child(uid).removeValue().addOnCompleteListener(task -> {
-                // Clear SharedPreferences
-                sharedPreferences.edit().clear().apply();
-                
-                // Sign out from Auth
-                mAuth.signOut();
-                
-                // Navigate to Login
-                Intent intent = new Intent(getActivity(), LoginActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                
-                Toast.makeText(getContext(), "Logged out and data cleared", Toast.LENGTH_SHORT).show();
-            });
-        }
+        // Clear SharedPreferences
+        sharedPreferences.edit().clear().apply();
+        
+        // Sign out from Firebase Auth
+        mAuth.signOut();
+        
+        // Navigate to Login Screen
+        Intent intent = new Intent(getActivity(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        
+        Toast.makeText(getContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
     }
 }

@@ -1,6 +1,5 @@
 package com.example.e_commerce_mart_asssign3;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -20,9 +19,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
@@ -30,20 +27,18 @@ public class ProductDetailActivity extends AppCompatActivity {
     private TextView tvProductName, tvProductPrice, tvProductModel, tvProductDescription;
     private Button btnBuyNow;
     private int productId;
-    private String productKey; // Firebase key like "prod_001"
+    private String productKey;
     private Product product;
-    private SharedPreferences sharedPreferences;
     private List<Product> allProducts;
     private DatabaseReference mDatabase;
-
-    private static final String PREF_CART = "user.cart";
+    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_detail);
 
-        sharedPreferences = getSharedPreferences("FastMartPrefs", MODE_PRIVATE);
+        dbHelper = new DatabaseHelper(this);
         mDatabase = FirebaseDatabase.getInstance().getReference("products");
         allProducts = ProductData.getAllProducts();
 
@@ -89,13 +84,11 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private void loadProductData() {
-        // If we have a Firebase key, fetch directly by key
         if (productKey != null && !productKey.isEmpty()) {
             fetchFromFirebase(productKey);
             return;
         }
 
-        // Check static data by numeric ID
         for (Product p : allProducts) {
             if (p.getId() == productId) {
                 product = p;
@@ -104,7 +97,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         }
 
-        // Last resort: search all Firebase products for matching ID
         mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -117,9 +109,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                             displayProduct();
                             return;
                         }
-                    } catch (Exception e) {
-                        // Skip
-                    }
+                    } catch (Exception e) {}
                 }
                 Toast.makeText(ProductDetailActivity.this, "Product not found", Toast.LENGTH_SHORT).show();
                 finish();
@@ -145,9 +135,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                             displayProduct();
                             return;
                         }
-                    } catch (Exception e) {
-                        // Fall through
-                    }
+                    } catch (Exception e) {}
                 }
                 Toast.makeText(ProductDetailActivity.this, "Product not found", Toast.LENGTH_SHORT).show();
                 finish();
@@ -167,14 +155,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         tvProductModel.setText(product.getModel() != null ? product.getModel() : product.getType());
         tvProductDescription.setText(product.getDescription());
 
-        // Load image: prefer URL, fallback to drawable resource
         if (product.hasImageUrl()) {
-            Glide.with(this)
-                    .load(product.getImageUrl())
-                    .placeholder(R.drawable.camera)
-                    .error(R.drawable.camera)
-                    .centerCrop()
-                    .into(ivProductImage);
+            Glide.with(this).load(product.getImageUrl()).placeholder(R.drawable.camera).centerCrop().into(ivProductImage);
         } else if (product.getImageResId() != 0) {
             ivProductImage.setImageResource(product.getImageResId());
         } else {
@@ -192,14 +174,10 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private void addToCart() {
-        Set<String> cartItems = new HashSet<>(
-                sharedPreferences.getStringSet(PREF_CART, new HashSet<>())
-        );
-
-        cartItems.add(String.valueOf(product.getId()));
-        sharedPreferences.edit().putStringSet(PREF_CART, cartItems).apply();
-
-        Toast.makeText(this, product.getName() + " added to cart!", Toast.LENGTH_SHORT).show();
-        finish();
+        if (product != null) {
+            dbHelper.addToCart(product, 1);
+            Toast.makeText(this, product.getName() + " added to cart!", Toast.LENGTH_SHORT).show();
+            finish();
+        }
     }
 }

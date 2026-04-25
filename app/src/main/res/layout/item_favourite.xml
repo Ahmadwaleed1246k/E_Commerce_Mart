@@ -1,80 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="12dp"
-    android:background="@android:color/white"
-    android:layout_margin="4dp"
-    android:elevation="2dp">
-
-    <ImageView
-        android:id="@+id/iv_fav_image"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:src="@android:drawable/ic_media_play"
-        android:scaleType="centerCrop"/>
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/card_bg"
+    app:strokeWidth="0dp">
 
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:paddingStart="12dp">
-
-        <TextView
-            android:id="@+id/tv_fav_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Product Name"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="@color/text_main"/>
-
-        <TextView
-            android:id="@+id/tv_fav_price"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="$0.00"
-            android:textColor="@color/accent_color"
-            android:textStyle="bold"
-            android:layout_marginTop="4dp"/>
-
-        <TextView
-            android:id="@+id/tv_fav_model"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Model"
-            android:textSize="12sp"
-            android:textColor="@color/text_sub"
-            android:layout_marginTop="2dp"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:padding="12dp">
 
-        <ImageView
-            android:id="@+id/iv_fav_cart"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_shopping_cart"
-            android:tint="@color/success"
-            android:padding="8dp"
-            android:background="?android:attr/selectableItemBackground"/>
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/iv_fav_image"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/camera"
+            app:shapeAppearanceOverlay="@style/RoundedImageView" />
 
-        <ImageView
-            android:id="@+id/iv_fav_delete"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/delete"
-            android:tint="@color/error"
-            android:padding="8dp"
-            android:background="?android:attr/selectableItemBackground"/>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_fav_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Product Name"
+                android:textColor="@color/text_main"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="1" />
+
+            <TextView
+                android:id="@+id/tv_fav_model"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Model"
+                android:textColor="@color/text_sub"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tv_fav_price"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="$0.00"
+                android:textColor="@color/accent_color"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/iv_fav_cart"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_shopping_cart"
+                app:tint="@color/text_sub" />
+
+            <ImageView
+                android:id="@+id/iv_fav_more"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_more"
+                app:tint="@color/text_sub" />
+
+        </LinearLayout>
 
     </LinearLayout>
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

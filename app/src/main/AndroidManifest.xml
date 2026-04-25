@@ -51,6 +51,12 @@
             android:exported="false"
             android:theme="@style/Theme.E_Commerce_Mart_Asssign3" />
         
+        <!-- Chat Activity -->
+        <activity
+            android:name=".ChatActivity"
+            android:exported="false"
+            android:theme="@style/Theme.E_Commerce_Mart_Asssign3" />
+
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"

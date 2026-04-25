@@ -1,7 +1,6 @@
 package com.example.e_commerce_mart_asssign3;
 
 import android.Manifest;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.telephony.SmsManager;
@@ -17,10 +16,12 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
+import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 public class CartFragment extends Fragment {
 
@@ -29,10 +30,8 @@ public class CartFragment extends Fragment {
     private Button btnCheckout;
     private CartAdapter adapter;
     private List<CartItem> cartItems;
-    private SharedPreferences sharedPreferences;
-    private List<Product> allProducts;
+    private DatabaseHelper dbHelper;
 
-    private static final String PREF_CART = "user.cart";
     private static final int SMS_PERMISSION_CODE = 100;
 
     @Override
@@ -40,8 +39,7 @@ public class CartFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_cart, container, false);
 
-        sharedPreferences = requireActivity().getSharedPreferences("FastMartPrefs", 0);
-        allProducts = ProductData.getAllProducts();
+        dbHelper = new DatabaseHelper(getContext());
 
         rvCart = view.findViewById(R.id.rv_cart);
         tvTotalPrice = view.findViewById(R.id.tv_total_price);
@@ -53,24 +51,6 @@ public class CartFragment extends Fragment {
 
         loadCartItems();
 
-        adapter = new CartAdapter(cartItems, new CartAdapter.OnCartItemListener() {
-            @Override
-            public void onQuantityChanged() {
-                updateTotals();
-                saveCartToPreferences();
-            }
-
-            @Override
-            public void onRemoveClick(int position) {
-                cartItems.remove(position);
-                updateTotals();
-                saveCartToPreferences();
-                adapter.updateList(cartItems);
-            }
-        });
-
-        rvCart.setAdapter(adapter);
-
         btnCheckout.setOnClickListener(v -> {
             if (cartItems.isEmpty()) {
                 Toast.makeText(getContext(), "Cart is empty", Toast.LENGTH_SHORT).show();
@@ -79,34 +59,14 @@ public class CartFragment extends Fragment {
             }
         });
 
-        updateTotals();
-
         return view;
     }
 
     private void loadCartItems() {
-        cartItems = new ArrayList<>();
-        Set<String> cartIds = sharedPreferences.getStringSet(PREF_CART, new HashSet<>());
-
-        for (String idStr : cartIds) {
-            try {
-                int id = Integer.parseInt(idStr);
-                for (Product product : allProducts) {
-                    if (product.getId() == id) {
-                        cartItems.add(new CartItem(product, 1));
-                        break;
-                    }
-                }
-            } catch (NumberFormatException ignored) {}
-        }
-    }
-
-    private void saveCartToPreferences() {
-        Set<String> cartIds = new HashSet<>();
-        for (CartItem item : cartItems) {
-            cartIds.add(String.valueOf(item.getProduct().getId()));
-        }
-        sharedPreferences.edit().putStringSet(PREF_CART, cartIds).apply();
+        cartItems = dbHelper.getCartItems();
+        adapter = new CartAdapter(getContext(), cartItems, this::updateTotals);
+        rvCart.setAdapter(adapter);
+        updateTotals();
     }
 
     private void updateTotals() {
@@ -115,7 +75,7 @@ public class CartFragment extends Fragment {
             subtotal += item.getTotalPrice();
         }
 
-        double shipping = subtotal > 0 ? 5.00 : 0; // Adjusted shipping to $5
+        double shipping = subtotal > 0 ? 5.00 : 0;
         double total = subtotal + shipping;
 
         tvTotalPrice.setText(String.format("$%.2f", subtotal));
@@ -135,42 +95,49 @@ public class CartFragment extends Fragment {
 
     private void sendSms() {
         try {
-            String uid = com.google.firebase.auth.FirebaseAuth.getInstance().getUid();
+            String uid = FirebaseAuth.getInstance().getUid();
             if (uid == null) return;
 
-            StringBuilder orderDetails = new StringBuilder("Order Details:\n");
+            // Prepare Order Summary
+            StringBuilder summary = new StringBuilder("FastMart Order Summary:\n");
             for (CartItem item : cartItems) {
-                orderDetails.append(item.getProduct().getName())
+                summary.append(item.getProduct().getName())
                         .append(" x")
                         .append(item.getQuantity())
-                        .append(" = $")
+                        .append(" ($")
                         .append(String.format("%.2f", item.getTotalPrice()))
-                        .append("\n");
+                        .append(")\n");
             }
-            orderDetails.append("\nShipping: $").append(tvShipping.getText().toString().replace("$", ""));
-            orderDetails.append("\nTotal: $").append(tvGrandTotal.getText().toString().replace("$", ""));
+            summary.append("\nSubtotal: ").append(tvTotalPrice.getText().toString());
+            summary.append("\nShipping: ").append(tvShipping.getText().toString());
+            summary.append("\nTotal: ").append(tvGrandTotal.getText().toString());
 
-            // Save to Firebase
+            // Save to Firebase Order History
             String orderId = "ORD-" + System.currentTimeMillis();
-            String date = java.text.DateFormat.getDateTimeInstance().format(new java.util.Date());
-            double total = Double.parseDouble(tvGrandTotal.getText().toString().replace("$", ""));
+            String date = DateFormat.getDateTimeInstance().format(new Date());
+            double totalVal = Double.parseDouble(tvGrandTotal.getText().toString().replace("$", ""));
             
-            Order order = new Order(orderId, uid, date, new ArrayList<>(cartItems), total, "Processing");
+            Order order = new Order(orderId, uid, date, new ArrayList<>(cartItems), totalVal, "Processing");
             
-            com.google.firebase.database.FirebaseDatabase.getInstance().getReference("orders")
+            FirebaseDatabase.getInstance().getReference("orders")
                     .child(uid)
                     .child(orderId)
-                    .setValue(order);
+                    .setValue(order)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            // Only send SMS if Firebase save succeeds (as per requirement 7 logic)
+                            SmsManager smsManager = SmsManager.getDefault();
+                            smsManager.sendTextMessage("5551234567", null, summary.toString(), null, null);
 
-            SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage("5551234567", null, orderDetails.toString(), null, null);
+                            Toast.makeText(getContext(), "Order placed and summary sent!", Toast.LENGTH_LONG).show();
 
-            Toast.makeText(getContext(), "Order placed successfully!", Toast.LENGTH_LONG).show();
-
-            cartItems.clear();
-            saveCartToPreferences();
-            adapter.updateList(cartItems);
-            updateTotals();
+                            // Clear SQLite Cart
+                            dbHelper.clearCart();
+                            cartItems.clear();
+                            adapter.notifyDataSetChanged();
+                            updateTotals();
+                        }
+                    });
 
         } catch (Exception e) {
             Toast.makeText(getContext(), "Checkout failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -179,7 +146,7 @@ public class CartFragment extends Fragment {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == SMS_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -188,5 +155,11 @@ public class CartFragment extends Fragment {
                 Toast.makeText(getContext(), "SMS permission denied", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+    
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadCartItems();
     }
 }

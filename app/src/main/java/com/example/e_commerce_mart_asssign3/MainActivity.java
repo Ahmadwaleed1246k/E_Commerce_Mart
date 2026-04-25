@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,7 +17,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,15 +36,19 @@ public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private FrameLayout fragmentContainer;
-    private BottomNavigationView bottomNavigationView;
+    private MaterialCardView customBottomNav;
     private NavigationView navViewSeller;
     
+    // Custom Nav Buttons
+    private LinearLayout btnHome, btnSearch, btnFav, btnOrders, btnCart, btnProfile;
+    private ImageView ivHome, ivSearch, ivFav, ivOrders, ivCart, ivProfile;
+    private TextView tvHome, tvSearch, tvFav, tvOrders, tvCart, tvProfile;
+
     // Theme buttons
     private TextView btnThemeLight, btnThemeDark;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply theme before super.onCreate
         sharedPreferences = getSharedPreferences("FastMartPrefs", MODE_PRIVATE);
         boolean isDarkMode = sharedPreferences.getBoolean("is_dark_mode", false);
         if (isDarkMode) {
@@ -70,36 +76,36 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         drawerLayout = findViewById(R.id.drawer_layout);
         fragmentContainer = findViewById(R.id.fragment_container);
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        customBottomNav = findViewById(R.id.custom_bottom_nav);
         navViewSeller = findViewById(R.id.nav_view_seller);
         
         btnThemeLight = findViewById(R.id.btn_theme_light);
         btnThemeDark = findViewById(R.id.btn_theme_dark);
 
+        // Initialize Custom Nav Components
+        btnHome = findViewById(R.id.btn_nav_home);
+        btnSearch = findViewById(R.id.btn_nav_search);
+        btnFav = findViewById(R.id.btn_nav_favourites);
+        btnOrders = findViewById(R.id.btn_nav_orders);
+        btnCart = findViewById(R.id.btn_nav_cart);
+        btnProfile = findViewById(R.id.btn_nav_profile);
+
+        ivHome = findViewById(R.id.iv_nav_home);
+        ivSearch = findViewById(R.id.iv_nav_search);
+        ivFav = findViewById(R.id.iv_nav_favourites);
+        ivOrders = findViewById(R.id.iv_nav_orders);
+        ivCart = findViewById(R.id.iv_nav_cart);
+        ivProfile = findViewById(R.id.iv_nav_profile);
+
+        tvHome = findViewById(R.id.tv_nav_home);
+        tvSearch = findViewById(R.id.tv_nav_search);
+        tvFav = findViewById(R.id.tv_nav_favourites);
+        tvOrders = findViewById(R.id.tv_nav_orders);
+        tvCart = findViewById(R.id.tv_nav_cart);
+        tvProfile = findViewById(R.id.tv_nav_profile);
+
+        setupCustomNav();
         setupThemeSwitching();
-
-        // Buyer Bottom Nav
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            Fragment selectedFragment = null;
-            int itemId = item.getItemId();
-
-            if (itemId == R.id.nav_home) {
-                selectedFragment = new HomeFragment();
-            } else if (itemId == R.id.nav_search) {
-                selectedFragment = new SearchFragment();
-            } else if (itemId == R.id.nav_orders) {
-                selectedFragment = new OrderHistoryFragment();
-            } else if (itemId == R.id.nav_cart) {
-                selectedFragment = new CartFragment();
-            } else if (itemId == R.id.nav_profile) {
-                selectedFragment = new ProfileFragment();
-            }
-
-            if (selectedFragment != null) {
-                loadFragment(selectedFragment);
-            }
-            return true;
-        });
 
         // Seller Drawer Nav
         navViewSeller.setNavigationItemSelectedListener(item -> {
@@ -113,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_seller_account) {
                 selectedFragment = new ProfileFragment();
             }
-            // Add other cases as implemented
 
             if (selectedFragment != null) {
                 loadFragment(selectedFragment);
@@ -123,30 +128,76 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void setupCustomNav() {
+        btnHome.setOnClickListener(v -> selectNav(1));
+        btnSearch.setOnClickListener(v -> selectNav(2));
+        btnFav.setOnClickListener(v -> selectNav(3));
+        btnOrders.setOnClickListener(v -> selectNav(4));
+        btnCart.setOnClickListener(v -> selectNav(5));
+        btnProfile.setOnClickListener(v -> selectNav(6));
+    }
+
+    private void selectNav(int index) {
+        // Reset all colors
+        int inactiveColor = getResources().getColor(R.color.text_sub);
+        int activeColor = getResources().getColor(R.color.accent_color);
+
+        ivHome.setColorFilter(inactiveColor); tvHome.setTextColor(inactiveColor);
+        ivSearch.setColorFilter(inactiveColor); tvSearch.setTextColor(inactiveColor);
+        ivFav.setColorFilter(inactiveColor); tvFav.setTextColor(inactiveColor);
+        ivOrders.setColorFilter(inactiveColor); tvOrders.setTextColor(inactiveColor);
+        ivCart.setColorFilter(inactiveColor); tvCart.setTextColor(inactiveColor);
+        ivProfile.setColorFilter(inactiveColor); tvProfile.setTextColor(inactiveColor);
+
+        Fragment selectedFragment = null;
+        switch (index) {
+            case 1:
+                ivHome.setColorFilter(activeColor); tvHome.setTextColor(activeColor);
+                selectedFragment = new HomeFragment();
+                break;
+            case 2:
+                ivSearch.setColorFilter(activeColor); tvSearch.setTextColor(activeColor);
+                selectedFragment = new SearchFragment();
+                break;
+            case 3:
+                ivFav.setColorFilter(activeColor); tvFav.setTextColor(activeColor);
+                selectedFragment = new FavouritesFragment();
+                break;
+            case 4:
+                ivOrders.setColorFilter(activeColor); tvOrders.setTextColor(activeColor);
+                selectedFragment = new OrderHistoryFragment();
+                break;
+            case 5:
+                ivCart.setColorFilter(activeColor); tvCart.setTextColor(activeColor);
+                selectedFragment = new CartFragment();
+                break;
+            case 6:
+                ivProfile.setColorFilter(activeColor); tvProfile.setTextColor(activeColor);
+                selectedFragment = new ProfileFragment();
+                break;
+        }
+
+        if (selectedFragment != null) {
+            loadFragment(selectedFragment);
+        }
+    }
+
     private void setupThemeSwitching() {
         boolean isDarkMode = sharedPreferences.getBoolean("is_dark_mode", false);
         updateThemeUI(isDarkMode);
 
         btnThemeLight.setOnClickListener(v -> {
-            if (sharedPreferences.getBoolean("is_dark_mode", false)) {
-                toggleTheme(false);
-            }
+            if (sharedPreferences.getBoolean("is_dark_mode", false)) toggleTheme(false);
         });
 
         btnThemeDark.setOnClickListener(v -> {
-            if (!sharedPreferences.getBoolean("is_dark_mode", false)) {
-                toggleTheme(true);
-            }
+            if (!sharedPreferences.getBoolean("is_dark_mode", false)) toggleTheme(true);
         });
     }
 
     private void toggleTheme(boolean dark) {
         sharedPreferences.edit().putBoolean("is_dark_mode", dark).apply();
-        if (dark) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
+        AppCompatDelegate.setDefaultNightMode(dark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         recreate();
     }
 
@@ -170,59 +221,39 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     String accountType = snapshot.child("accountType").getValue(String.class);
-                    String name = snapshot.child("name").getValue(String.class);
-                    String email = snapshot.child("email").getValue(String.class);
-
                     if ("buyer".equalsIgnoreCase(accountType)) {
                         showBuyerView();
                     } else {
-                        showSellerView(name, email);
+                        showSellerView(snapshot.child("name").getValue(String.class), snapshot.child("email").getValue(String.class));
                     }
                 } else {
-                    // If no profile, we might be in the middle of signup, or it's a legacy user
                     showBuyerView();
                 }
             }
-
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(MainActivity.this, "Error checking account type", Toast.LENGTH_SHORT).show();
-            }
+            public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
     private void showBuyerView() {
-        bottomNavigationView.setVisibility(View.VISIBLE);
+        customBottomNav.setVisibility(View.VISIBLE);
         navViewSeller.setVisibility(View.GONE);
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-        loadFragment(new HomeFragment());
+        selectNav(1);
     }
 
     private void showSellerView(String name, String email) {
-        bottomNavigationView.setVisibility(View.GONE);
+        customBottomNav.setVisibility(View.GONE);
         navViewSeller.setVisibility(View.VISIBLE);
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-        
-        // Update Drawer Header
         View headerView = navViewSeller.getHeaderView(0);
-        TextView tvName = headerView.findViewById(R.id.tv_drawer_name);
-        TextView tvEmail = headerView.findViewById(R.id.tv_drawer_email);
-        tvName.setText(name);
-        tvEmail.setText(email);
-
+        ((TextView)headerView.findViewById(R.id.tv_drawer_name)).setText(name);
+        ((TextView)headerView.findViewById(R.id.tv_drawer_email)).setText(email);
         loadFragment(new SellerHomeFragment());
     }
 
     private void loadFragment(Fragment fragment) {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit();
-    }
-
-    private void logout() {
-        mAuth.signOut();
-        navigateToLogin();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 
     private void navigateToLogin() {

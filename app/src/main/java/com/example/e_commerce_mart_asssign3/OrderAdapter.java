@@ -30,6 +30,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         holder.tvOrderDate.setText(order.getDate());
         holder.tvOrderStatus.setText(order.getStatus().toUpperCase());
         holder.tvOrderTotal.setText(String.format("$%.2f", order.getTotalAmount()));
+        holder.tvBuyerId.setText("Buyer: " + order.getUserId());
 
         StringBuilder itemsBuilder = new StringBuilder();
         for (CartItem item : order.getItems()) {
@@ -49,7 +50,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     }
 
     static class OrderViewHolder extends RecyclerView.ViewHolder {
-        TextView tvOrderId, tvOrderDate, tvOrderStatus, tvOrderItems, tvOrderTotal;
+        TextView tvOrderId, tvOrderDate, tvOrderStatus, tvOrderItems, tvOrderTotal, tvBuyerId;
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -58,6 +59,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             tvOrderStatus = itemView.findViewById(R.id.tv_order_status);
             tvOrderItems = itemView.findViewById(R.id.tv_order_items);
             tvOrderTotal = itemView.findViewById(R.id.tv_order_total);
+            tvBuyerId = itemView.findViewById(R.id.tv_buyer_id);
         }
     }
 }

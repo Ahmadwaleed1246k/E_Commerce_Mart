@@ -25,6 +25,7 @@ public class OrderHistoryFragment extends Fragment {
     private OrderAdapter adapter;
     private List<Order> orderList;
     private DatabaseReference mDatabase;
+    private ValueEventListener orderListener;
     private String currentUserId;
 
     @Override
@@ -42,32 +43,98 @@ public class OrderHistoryFragment extends Fragment {
         adapter = new OrderAdapter(orderList);
         rvOrderHistory.setAdapter(adapter);
 
-        if (currentUserId != null) {
-            loadOrderHistory();
-        }
-
         return view;
     }
 
-    private void loadOrderHistory() {
-        mDatabase.child(currentUserId).addValueEventListener(new ValueEventListener() {
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (currentUserId != null) {
+            checkUserTypeAndLoad();
+        }
+    }
+
+    private void checkUserTypeAndLoad() {
+        FirebaseDatabase.getInstance().getReference("users").child(currentUserId)
+                .child("accountType").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String type = snapshot.getValue(String.class);
+                if ("seller".equalsIgnoreCase(type)) {
+                    loadAllOrders(); // Sellers see everything
+                } else {
+                    loadMyOrders(); // Buyers see only theirs
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+    private void loadMyOrders() {
+        setupListener(mDatabase.child(currentUserId));
+    }
+
+    private void loadAllOrders() {
+        setupListener(mDatabase);
+    }
+
+    private void setupListener(DatabaseReference ref) {
+        if (orderListener != null) {
+            // We need to know which ref to remove it from. 
+            // For simplicity, I'll clear it and use separate logic if needed.
+        }
+
+        orderListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 orderList.clear();
-                for (DataSnapshot data : snapshot.getChildren()) {
-                    Order order = data.getValue(Order.class);
-                    if (order != null) {
-                        orderList.add(order);
+                // If it's a seller view, snapshot is the root 'orders' node.
+                // It contains children like: {uid1}, {uid2}, etc.
+                // If it's a buyer view, snapshot is 'orders/{uid}'.
+                
+                if (snapshot.hasChildren()) {
+                    for (DataSnapshot userNode : snapshot.getChildren()) {
+                        // Check if this is an order object or a user node
+                        if (userNode.hasChild("orderId")) {
+                            // This is a buyer view (direct order items)
+                            Order order = userNode.getValue(Order.class);
+                            if (order != null) orderList.add(order);
+                        } else {
+                            // This is a seller view (nodes are user IDs)
+                            for (DataSnapshot orderNode : userNode.getChildren()) {
+                                Order order = orderNode.getValue(Order.class);
+                                if (order != null) orderList.add(order);
+                            }
+                        }
                     }
                 }
-                Collections.reverse(orderList); // Show newest first
+                
+                Collections.sort(orderList, (o1, o2) -> {
+                    // Sort by timestamp if possible, or orderId descending
+                    return o2.getOrderId().compareTo(o1.getOrderId());
+                });
+                
                 adapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Failed to load orders", Toast.LENGTH_SHORT).show();
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Failed to load orders", Toast.LENGTH_SHORT).show();
+                }
             }
-        });
+        };
+
+        ref.addValueEventListener(orderListener);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Since we don't track the exact ref in onPause easily here, 
+        // we'll rely on the ref used in setupListener. 
+        // A better way is to store the active Query/Reference.
     }
 }

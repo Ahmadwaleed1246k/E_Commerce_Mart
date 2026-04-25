@@ -1,5 +1,6 @@
 package com.example.e_commerce_mart_asssign3;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,22 +12,22 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import java.util.HashSet;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.List;
-import java.util.Set;
 
 public class HomeFragment extends Fragment {
 
     private RecyclerView rvDeals;
     private RecyclerView rvRecommended;
     private TextView tvWelcome;
+    private FloatingActionButton fabChat;
     private List<Product> dealsList;
     private List<Product> recommendedList;
     private DealsAdapter dealsAdapter;
     private RecommendedAdapter recommendedAdapter;
     private SharedPreferences sharedPreferences;
+    private DatabaseHelper dbHelper;
 
-    private static final String PREF_FAVORITES = "user.favorites";
     private static final String PREF_USER_NAME = "user_name";
 
     @Override
@@ -35,10 +36,12 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         sharedPreferences = requireActivity().getSharedPreferences("FastMartPrefs", 0);
+        dbHelper = new DatabaseHelper(getContext());
 
         rvDeals = view.findViewById(R.id.rv_deals);
         rvRecommended = view.findViewById(R.id.rv_recommended);
         tvWelcome = view.findViewById(R.id.tv_welcome);
+        fabChat = view.findViewById(R.id.fab_chat);
 
         String userName = sharedPreferences.getString(PREF_USER_NAME, "User");
 
@@ -51,15 +54,10 @@ public class HomeFragment extends Fragment {
 
         loadProducts();
 
-        LinearLayoutManager horizontalManager = new LinearLayoutManager(
-                getContext(), LinearLayoutManager.HORIZONTAL, false);
-        rvDeals.setLayoutManager(horizontalManager);
-        dealsAdapter = new DealsAdapter(dealsList, product -> toggleFavorite(product));
-        rvDeals.setAdapter(dealsAdapter);
-
-        rvRecommended.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        recommendedAdapter = new RecommendedAdapter(recommendedList, product -> toggleFavorite(product));
-        rvRecommended.setAdapter(recommendedAdapter);
+        fabChat.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), ChatActivity.class);
+            startActivity(intent);
+        });
 
         return view;
     }
@@ -68,36 +66,43 @@ public class HomeFragment extends Fragment {
         dealsList = ProductData.getDealsOfTheDay();
         recommendedList = ProductData.getRecommendedProducts();
 
-        Set<String> favoriteIds = sharedPreferences.getStringSet(PREF_FAVORITES, new HashSet<>());
-
+        // Update static products with favorite status from SQLite
         for (Product product : dealsList) {
-            product.setFavorite(favoriteIds.contains(String.valueOf(product.getId())));
+            product.setFavorite(dbHelper.isFavourite(product.getId()));
         }
         for (Product product : recommendedList) {
-            product.setFavorite(favoriteIds.contains(String.valueOf(product.getId())));
+            product.setFavorite(dbHelper.isFavourite(product.getId()));
         }
 
-        // Fetch from Firebase
+        // Initialize adapters
+        setupAdapters();
+
+        // Real-time fetch from Firebase
         com.google.firebase.database.FirebaseDatabase.getInstance().getReference("products")
                 .addValueEventListener(new com.google.firebase.database.ValueEventListener() {
                     @Override
                     public void onDataChange(@androidx.annotation.NonNull com.google.firebase.database.DataSnapshot snapshot) {
+                        // Clear dynamic additions before reloading
+                        // Note: For real-time updates without app restart, we refresh the list
+                        // but we keep static ones if they aren't in Firebase
                         for (com.google.firebase.database.DataSnapshot data : snapshot.getChildren()) {
                             Product product = data.getValue(Product.class);
                             if (product != null) {
-                                // Store the Firebase key
                                 product.setProductKey(data.getKey());
                                 
-                                // Avoid duplicates if already in static list
                                 boolean exists = false;
-                                for (Product p : recommendedList) {
-                                    if (p.getId() == product.getId()) {
+                                for (int i = 0; i < recommendedList.size(); i++) {
+                                    if (recommendedList.get(i).getId() == product.getId()) {
+                                        // Update existing
+                                        product.setFavorite(dbHelper.isFavourite(product.getId()));
+                                        recommendedList.set(i, product);
                                         exists = true;
                                         break;
                                     }
                                 }
+                                
                                 if (!exists) {
-                                    product.setFavorite(favoriteIds.contains(String.valueOf(product.getId())));
+                                    product.setFavorite(dbHelper.isFavourite(product.getId()));
                                     recommendedList.add(product);
                                 }
                             }
@@ -112,23 +117,28 @@ public class HomeFragment extends Fragment {
                 });
     }
 
-    private void toggleFavorite(Product product) {
-        Set<String> favoriteIds = new HashSet<>(sharedPreferences.getStringSet(PREF_FAVORITES, new HashSet<>()));
-        String productId = String.valueOf(product.getId());
+    private void setupAdapters() {
+        LinearLayoutManager horizontalManager = new LinearLayoutManager(
+                getContext(), LinearLayoutManager.HORIZONTAL, false);
+        rvDeals.setLayoutManager(horizontalManager);
+        dealsAdapter = new DealsAdapter(dealsList, product -> toggleFavorite(product));
+        rvDeals.setAdapter(dealsAdapter);
 
+        rvRecommended.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        recommendedAdapter = new RecommendedAdapter(recommendedList, product -> toggleFavorite(product));
+        rvRecommended.setAdapter(recommendedAdapter);
+    }
+
+    private void toggleFavorite(Product product) {
         if (product.isFavorite()) {
-            favoriteIds.remove(productId);
+            dbHelper.removeFavourite(product.getId());
             product.setFavorite(false);
             Toast.makeText(getContext(), "Removed from Favorites", Toast.LENGTH_SHORT).show();
         } else {
-            favoriteIds.add(productId);
+            dbHelper.addFavourite(product);
             product.setFavorite(true);
             Toast.makeText(getContext(), "Added to Favorites", Toast.LENGTH_SHORT).show();
         }
-
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putStringSet(PREF_FAVORITES, favoriteIds);
-        editor.apply();
 
         dealsAdapter.notifyDataSetChanged();
         recommendedAdapter.notifyDataSetChanged();
