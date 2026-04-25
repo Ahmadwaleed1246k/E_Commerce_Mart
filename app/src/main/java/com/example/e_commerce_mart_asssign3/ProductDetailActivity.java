@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -28,6 +30,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private TextView tvProductName, tvProductPrice, tvProductModel, tvProductDescription;
     private Button btnBuyNow;
     private int productId;
+    private String productKey; // Firebase key like "prod_001"
     private Product product;
     private SharedPreferences sharedPreferences;
     private List<Product> allProducts;
@@ -41,13 +44,35 @@ public class ProductDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_product_detail);
 
         sharedPreferences = getSharedPreferences("FastMartPrefs", MODE_PRIVATE);
-        mDatabase = FirebaseDatabase.getInstance().getReference("all_products");
+        mDatabase = FirebaseDatabase.getInstance().getReference("products");
         allProducts = ProductData.getAllProducts();
 
         productId = getIntent().getIntExtra("product_id", -1);
+        productKey = getIntent().getStringExtra("product_key");
 
         initViews();
+        checkAccountType();
         loadProductData();
+    }
+
+    private void checkAccountType() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid != null) {
+            FirebaseDatabase.getInstance().getReference("users").child(uid).child("accountType")
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()) {
+                                String type = snapshot.getValue(String.class);
+                                if ("seller".equalsIgnoreCase(type)) {
+                                    btnBuyNow.setVisibility(View.GONE);
+                                }
+                            }
+                        }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {}
+                    });
+        }
     }
 
     private void initViews() {
@@ -64,7 +89,13 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private void loadProductData() {
-        // First check static data
+        // If we have a Firebase key, fetch directly by key
+        if (productKey != null && !productKey.isEmpty()) {
+            fetchFromFirebase(productKey);
+            return;
+        }
+
+        // Check static data by numeric ID
         for (Product p : allProducts) {
             if (p.getId() == productId) {
                 product = p;
@@ -73,19 +104,53 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         }
 
-        // If not in static data, fetch from Firebase
-        mDatabase.child(String.valueOf(productId)).addListenerForSingleValueEvent(new ValueEventListener() {
+        // Last resort: search all Firebase products for matching ID
+        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot data : snapshot.getChildren()) {
+                    try {
+                        Product p = data.getValue(Product.class);
+                        if (p != null && p.getId() == productId) {
+                            product = p;
+                            product.setProductKey(data.getKey());
+                            displayProduct();
+                            return;
+                        }
+                    } catch (Exception e) {
+                        // Skip
+                    }
+                }
+                Toast.makeText(ProductDetailActivity.this, "Product not found", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(ProductDetailActivity.this, "Error loading product", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
+    }
+
+    private void fetchFromFirebase(String key) {
+        mDatabase.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    product = snapshot.getValue(Product.class);
-                    if (product != null) {
-                        displayProduct();
+                    try {
+                        product = snapshot.getValue(Product.class);
+                        if (product != null) {
+                            product.setProductKey(key);
+                            displayProduct();
+                            return;
+                        }
+                    } catch (Exception e) {
+                        // Fall through
                     }
-                } else {
-                    Toast.makeText(ProductDetailActivity.this, "Product not found", Toast.LENGTH_SHORT).show();
-                    finish();
                 }
+                Toast.makeText(ProductDetailActivity.this, "Product not found", Toast.LENGTH_SHORT).show();
+                finish();
             }
 
             @Override
@@ -101,11 +166,19 @@ public class ProductDetailActivity extends AppCompatActivity {
         tvProductPrice.setText(product.getPrice());
         tvProductModel.setText(product.getModel() != null ? product.getModel() : product.getType());
         tvProductDescription.setText(product.getDescription());
-        
-        if (product.getImageResId() != 0) {
+
+        // Load image: prefer URL, fallback to drawable resource
+        if (product.hasImageUrl()) {
+            Glide.with(this)
+                    .load(product.getImageUrl())
+                    .placeholder(R.drawable.camera)
+                    .error(R.drawable.camera)
+                    .centerCrop()
+                    .into(ivProductImage);
+        } else if (product.getImageResId() != 0) {
             ivProductImage.setImageResource(product.getImageResId());
         } else {
-            ivProductImage.setImageResource(R.drawable.camera); // Default
+            ivProductImage.setImageResource(R.drawable.camera);
         }
     }
 

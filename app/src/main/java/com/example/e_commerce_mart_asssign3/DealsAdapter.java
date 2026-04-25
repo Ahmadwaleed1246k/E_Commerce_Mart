@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import java.util.List;
 
 public class DealsAdapter extends RecyclerView.Adapter<DealsAdapter.DealViewHolder> {
@@ -40,7 +41,20 @@ public class DealsAdapter extends RecyclerView.Adapter<DealsAdapter.DealViewHold
         holder.tvPrice.setText(product.getPrice());
         holder.tvOriginalPrice.setText(product.getOriginalPrice());
         holder.tvDescription.setText(product.getDescription());
-        holder.ivImage.setImageResource(product.getImageResId());
+
+        // Load image: prefer URL, fallback to drawable
+        if (product.hasImageUrl()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(product.getImageUrl())
+                    .placeholder(R.drawable.camera)
+                    .error(R.drawable.camera)
+                    .centerCrop()
+                    .into(holder.ivImage);
+        } else if (product.getImageResId() != 0) {
+            holder.ivImage.setImageResource(product.getImageResId());
+        } else {
+            holder.ivImage.setImageResource(R.drawable.camera);
+        }
 
         if (product.isFavorite()) {
             holder.ivHeart.setImageResource(android.R.drawable.btn_star_big_on);
@@ -56,6 +70,9 @@ public class DealsAdapter extends RecyclerView.Adapter<DealsAdapter.DealViewHold
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), ProductDetailActivity.class);
+            if (product.getProductKey() != null) {
+                intent.putExtra("product_key", product.getProductKey());
+            }
             intent.putExtra("product_id", product.getId());
             v.getContext().startActivity(intent);
         });

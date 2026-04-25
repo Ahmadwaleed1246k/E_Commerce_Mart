@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#121212</color>
+    <color name="black">#FFFFFF</color>
+    
+    <!-- Primary Brand Colors -->
+    <color name="primary_color">#FFFFFF</color>
+    <color name="primary_dark">#000000</color>
+    <color name="primary_light">#333333</color>
+    <color name="accent_color">#FF6B00</color>
+    
+    <!-- UI Backgrounds -->
+    <color name="bg_light">#121212</color>
+    <color name="bg_dark">#121212</color>
+    <color name="card_bg">#1E1E1E</color>
+    
+    <!-- Text Colors -->
+    <color name="text_main">#FFFFFF</color>
+    <color name="text_sub">#E0E0E0</color>
+    <color name="text_hint">#AAAAAA</color>
+    <color name="text_white">#FFFFFF</color>
+    
+    <!-- Form Fields -->
+    <color name="field_bg">#2C2C2C</color>
+    <color name="field_stroke">#333333</color>
+    <color name="field_stroke_active">#FFFFFF</color>
+    
+    <!-- Action Colors -->
+    <color name="btn_bg">#FFFFFF</color>
+    <color name="btn_text">#121212</color>
+    <color name="success">#2ECC71</color>
+    <color name="error">#E74C3C</color>
+    <color name="warning">#F1C40F</color>
+
+    <color name="splash_background">#121212</color>
+    <color name="login_background">#121212</color>
+    <color name="card_background">#1E1E1E</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#AAAAAA</color>
+    <color name="button_primary">#FFFFFF</color>
+    <color name="button_primary_hover">#E0E0E0</color>
+    <color name="button_disabled">#333333</color>
+    <color name="input_background">#2C2C2C</color>
+    <color name="input_stroke">#333333</color>
+</resources>

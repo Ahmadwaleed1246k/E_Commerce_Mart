@@ -135,6 +135,9 @@ public class CartFragment extends Fragment {
 
     private void sendSms() {
         try {
+            String uid = com.google.firebase.auth.FirebaseAuth.getInstance().getUid();
+            if (uid == null) return;
+
             StringBuilder orderDetails = new StringBuilder("Order Details:\n");
             for (CartItem item : cartItems) {
                 orderDetails.append(item.getProduct().getName())
@@ -147,11 +150,22 @@ public class CartFragment extends Fragment {
             orderDetails.append("\nShipping: $").append(tvShipping.getText().toString().replace("$", ""));
             orderDetails.append("\nTotal: $").append(tvGrandTotal.getText().toString().replace("$", ""));
 
+            // Save to Firebase
+            String orderId = "ORD-" + System.currentTimeMillis();
+            String date = java.text.DateFormat.getDateTimeInstance().format(new java.util.Date());
+            double total = Double.parseDouble(tvGrandTotal.getText().toString().replace("$", ""));
+            
+            Order order = new Order(orderId, uid, date, new ArrayList<>(cartItems), total, "Processing");
+            
+            com.google.firebase.database.FirebaseDatabase.getInstance().getReference("orders")
+                    .child(uid)
+                    .child(orderId)
+                    .setValue(order);
+
             SmsManager smsManager = SmsManager.getDefault();
-            // Using a dummy number for now
             smsManager.sendTextMessage("5551234567", null, orderDetails.toString(), null, null);
 
-            Toast.makeText(getContext(), "Order sent via SMS", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "Order placed successfully!", Toast.LENGTH_LONG).show();
 
             cartItems.clear();
             saveCartToPreferences();
@@ -159,7 +173,7 @@ public class CartFragment extends Fragment {
             updateTotals();
 
         } catch (Exception e) {
-            Toast.makeText(getContext(), "Failed to send SMS: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Checkout failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 

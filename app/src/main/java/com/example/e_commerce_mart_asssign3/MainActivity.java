@@ -87,8 +87,8 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragment = new HomeFragment();
             } else if (itemId == R.id.nav_search) {
                 selectedFragment = new SearchFragment();
-            } else if (itemId == R.id.nav_favourites) {
-                selectedFragment = new FavouritesFragment();
+            } else if (itemId == R.id.nav_orders) {
+                selectedFragment = new OrderHistoryFragment();
             } else if (itemId == R.id.nav_cart) {
                 selectedFragment = new CartFragment();
             } else if (itemId == R.id.nav_profile) {
@@ -108,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
 
             if (itemId == R.id.nav_seller_home) {
                 selectedFragment = new SellerHomeFragment();
+            } else if (itemId == R.id.nav_seller_history) {
+                selectedFragment = new OrderHistoryFragment();
             } else if (itemId == R.id.nav_seller_account) {
                 selectedFragment = new ProfileFragment();
             }

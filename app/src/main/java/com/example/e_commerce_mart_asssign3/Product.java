@@ -11,6 +11,9 @@ public class Product {
     private int imageResId;
     private boolean isFavorite;
     private String sellerId;
+    private String imageUrl;
+    private String productKey; // Firebase key like "prod_001"
+    private String desc; // Alternative field name used in some Firebase entries
 
     public Product() {
         // Required for Firebase
@@ -40,19 +43,44 @@ public class Product {
     }
 
     public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public void setId(Object id) {
+        if (id instanceof Number) {
+            this.id = ((Number) id).intValue();
+        } else if (id instanceof String) {
+            try { this.id = Integer.parseInt((String) id); } catch (Exception e) { this.id = 0; }
+        }
+    }
     
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     
     public String getPrice() { return price; }
-    public void setPrice(String price) { this.price = price; }
+    public void setPrice(Object price) {
+        if (price instanceof String) {
+            this.price = (String) price;
+        } else if (price != null) {
+            this.price = "$" + String.valueOf(price);
+        }
+    }
     
     public String getOriginalPrice() { return originalPrice; }
-    public void setOriginalPrice(String originalPrice) { this.originalPrice = originalPrice; }
+    public void setOriginalPrice(Object originalPrice) {
+        if (originalPrice instanceof String) {
+            this.originalPrice = (String) originalPrice;
+        } else if (originalPrice != null) {
+            this.originalPrice = "$" + String.valueOf(originalPrice);
+        }
+    }
     
-    public String getDescription() { return description; }
+    public String getDescription() {
+        // Return desc if description is null (Firebase uses "desc" field)
+        if (description != null) return description;
+        return desc;
+    }
     public void setDescription(String description) { this.description = description; }
+    
+    public String getDesc() { return desc; }
+    public void setDesc(String desc) { this.desc = desc; }
     
     public String getModel() { return model; }
     public void setModel(String model) { this.model = model; }
@@ -68,4 +96,15 @@ public class Product {
     
     public String getSellerId() { return sellerId; }
     public void setSellerId(String sellerId) { this.sellerId = sellerId; }
+    
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    
+    public String getProductKey() { return productKey; }
+    public void setProductKey(String productKey) { this.productKey = productKey; }
+
+    // Helper: does this product have a URL-based image?
+    public boolean hasImageUrl() {
+        return imageUrl != null && !imageUrl.isEmpty();
+    }
 }

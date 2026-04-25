@@ -66,13 +66,13 @@ public class AddProductActivity extends AppCompatActivity {
         showProgress(true);
 
         // Generate unique ID
-        String productIdStr = mDatabase.child("all_products").push().getKey();
+        String productIdStr = mDatabase.child("products").push().getKey();
         int productId = productIdStr != null ? productIdStr.hashCode() : (int) System.currentTimeMillis();
 
         Product newProduct = new Product(productId, name, price, description, type, currentUserId);
 
-        // Save to all_products and user_products
-        mDatabase.child("all_products").child(String.valueOf(productId)).setValue(newProduct)
+        // Save to products and seller_products
+        mDatabase.child("products").child(String.valueOf(productId)).setValue(newProduct)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         mDatabase.child("seller_products").child(currentUserId).child(String.valueOf(productId)).setValue(newProduct)

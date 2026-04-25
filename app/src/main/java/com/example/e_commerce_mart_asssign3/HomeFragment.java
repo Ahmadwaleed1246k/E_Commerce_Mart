@@ -76,6 +76,40 @@ public class HomeFragment extends Fragment {
         for (Product product : recommendedList) {
             product.setFavorite(favoriteIds.contains(String.valueOf(product.getId())));
         }
+
+        // Fetch from Firebase
+        com.google.firebase.database.FirebaseDatabase.getInstance().getReference("products")
+                .addValueEventListener(new com.google.firebase.database.ValueEventListener() {
+                    @Override
+                    public void onDataChange(@androidx.annotation.NonNull com.google.firebase.database.DataSnapshot snapshot) {
+                        for (com.google.firebase.database.DataSnapshot data : snapshot.getChildren()) {
+                            Product product = data.getValue(Product.class);
+                            if (product != null) {
+                                // Store the Firebase key
+                                product.setProductKey(data.getKey());
+                                
+                                // Avoid duplicates if already in static list
+                                boolean exists = false;
+                                for (Product p : recommendedList) {
+                                    if (p.getId() == product.getId()) {
+                                        exists = true;
+                                        break;
+                                    }
+                                }
+                                if (!exists) {
+                                    product.setFavorite(favoriteIds.contains(String.valueOf(product.getId())));
+                                    recommendedList.add(product);
+                                }
+                            }
+                        }
+                        if (recommendedAdapter != null) {
+                            recommendedAdapter.notifyDataSetChanged();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@androidx.annotation.NonNull com.google.firebase.database.DatabaseError error) {}
+                });
     }
 
     private void toggleFavorite(Product product) {

@@ -63,9 +63,11 @@ public class SellerHomeFragment extends Fragment {
         fabAdd = view.findViewById(R.id.fab_add_product);
 
         productList = new ArrayList<>();
-        // Using RecommendedAdapter as it matches the grid style shown in the image
         adapter = new RecommendedAdapter(productList, product -> {
             Intent intent = new Intent(getContext(), ProductDetailActivity.class);
+            if (product.getProductKey() != null) {
+                intent.putExtra("product_key", product.getProductKey());
+            }
             intent.putExtra("product_id", product.getId());
             startActivity(intent);
         });
@@ -84,7 +86,9 @@ public class SellerHomeFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     String name = snapshot.getValue(String.class);
-                    tvWelcome.setText("Hello " + (name != null ? name : "Seller"));
+                    if (name != null && !name.isEmpty()) {
+                        tvWelcome.setText("Hello " + name);
+                    }
                 }
             }
 
@@ -94,14 +98,20 @@ public class SellerHomeFragment extends Fragment {
     }
 
     private void loadSellerProducts() {
-        mDatabase.child("seller_products").child(currentUserId).addValueEventListener(new ValueEventListener() {
+        mDatabase.child("products").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 productList.clear();
                 for (DataSnapshot data : snapshot.getChildren()) {
-                    Product product = data.getValue(Product.class);
-                    if (product != null) {
-                        productList.add(product);
+                    try {
+                        Product product = data.getValue(Product.class);
+                        if (product != null) {
+                            // Store the Firebase key so we can look it up later
+                            product.setProductKey(data.getKey());
+                            productList.add(product);
+                        }
+                    } catch (Exception e) {
+                        // Skip products that fail to parse
                     }
                 }
                 adapter.notifyDataSetChanged();
