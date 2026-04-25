@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "809385546962",
+    "firebase_url": "https://e-mart-1d49f-default-rtdb.firebaseio.com",
+    "project_id": "e-mart-1d49f",
+    "storage_bucket": "e-mart-1d49f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:809385546962:android:d7affb551786a1d22a490b",
+        "android_client_info": {
+          "package_name": "com.example.e_commerce_mart_asssign3"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFFXYZJ8ImgKbeK9Qo0ckID4gzHGZRhxw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

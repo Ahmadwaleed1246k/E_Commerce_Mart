@@ -1,3 +1,50 @@
 <resources>
-    <string name="app_name">E_Commerce_Mart_Asssign3</string>
+    <string name="app_name">FastMart</string>
+    
+    <!-- Splash Screen -->
+    <string name="welcome_to_fastmart">Welcome to FastMart</string>
+    <string name="discover_products">Discover products you love, delivered to your door</string>
+    <string name="get_started">Get Started</string>
+    
+    <!-- Login/Signup -->
+    <string name="get_started_now">Get Started now</string>
+    <string name="create_account_desc">Create an account or log in to explore about our app</string>
+    <string name="login">Log In</string>
+    <string name="signup">Sign Up</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    
+    <!-- Profile -->
+    <string name="complete_profile">Complete Your Profile</string>
+    <string name="step_2_of_2">Step 2 of 2</string>
+    <string name="full_name">Full Name</string>
+    <string name="account_type">Account Type</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="gender">Gender</string>
+    <string name="country">Country</string>
+    <string name="residential_address">Residential Address</string>
+    <string name="save_profile">Save Profile</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="seller">Seller</string>
+    <string name="buyer">Buyer</string>
+    
+    <!-- Validation -->
+    <string name="required_field">This field is required</string>
+    <string name="invalid_email">Please enter a valid email</string>
+    <string name="password_too_short">Password must be at least 6 characters</string>
+    <string name="passwords_not_match">Passwords do not match</string>
+    <string name="agree_terms">I agree to the Terms of Service and Privacy Policy</string>
+    
+    <!-- Generic -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="error">Error</string>
+    <string name="success">Success</string>
+    <string name="loading">Loading...</string>
+    
 </resources>
