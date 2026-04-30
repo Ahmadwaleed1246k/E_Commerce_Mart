@@ -17,7 +17,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class AddProductActivity extends AppCompatActivity {
 
-    private EditText etName, etType, etPrice, etDescription;
+    private EditText etName, etType, etPrice, etDescription, etImageUrl;
     private MaterialButton btnAddProduct;
     private ProgressBar progressBar;
 
@@ -46,6 +46,7 @@ public class AddProductActivity extends AppCompatActivity {
         etType = findViewById(R.id.et_product_type);
         etPrice = findViewById(R.id.et_product_price);
         etDescription = findViewById(R.id.et_product_description);
+        etImageUrl = findViewById(R.id.et_product_image_url);
         btnAddProduct = findViewById(R.id.btn_add_product);
         progressBar = findViewById(R.id.add_product_progress);
 
@@ -57,10 +58,15 @@ public class AddProductActivity extends AppCompatActivity {
         String type = etType.getText().toString().trim();
         String price = etPrice.getText().toString().trim();
         String description = etDescription.getText().toString().trim();
+        String imageUrl = etImageUrl.getText().toString().trim();
 
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(type) || TextUtils.isEmpty(price) || TextUtils.isEmpty(description)) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
+        }
+
+        if (!price.startsWith("$") && !price.isEmpty()) {
+            price = "$" + price;
         }
 
         showProgress(true);
@@ -70,23 +76,18 @@ public class AddProductActivity extends AppCompatActivity {
         int productId = productIdStr != null ? productIdStr.hashCode() : (int) System.currentTimeMillis();
 
         Product newProduct = new Product(productId, name, price, description, type, currentUserId);
+        if (!TextUtils.isEmpty(imageUrl)) {
+            newProduct.setImageUrl(imageUrl);
+        }
 
-        // Save to products and seller_products
+        // Save to products only
         mDatabase.child("products").child(String.valueOf(productId)).setValue(newProduct)
                 .addOnCompleteListener(task -> {
+                    showProgress(false);
                     if (task.isSuccessful()) {
-                        mDatabase.child("seller_products").child(currentUserId).child(String.valueOf(productId)).setValue(newProduct)
-                                .addOnCompleteListener(innerTask -> {
-                                    showProgress(false);
-                                    if (innerTask.isSuccessful()) {
-                                        Toast.makeText(AddProductActivity.this, "Product added successfully!", Toast.LENGTH_SHORT).show();
-                                        finish();
-                                    } else {
-                                        Toast.makeText(AddProductActivity.this, "Failed to link product to profile", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                        Toast.makeText(AddProductActivity.this, "Product added successfully!", Toast.LENGTH_SHORT).show();
+                        finish();
                     } else {
-                        showProgress(false);
                         Toast.makeText(AddProductActivity.this, "Failed to add product: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });

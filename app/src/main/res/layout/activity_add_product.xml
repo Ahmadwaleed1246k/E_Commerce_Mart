@@ -111,6 +111,27 @@
                 android:textColor="@color/text_main"
                 android:textSize="14sp" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Image URL (Optional)"
+                android:textColor="@color/text_main"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/et_product_image_url"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/field_bg_rounded"
+                android:hint="https://example.com/image.jpg"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="@color/text_main"
+                android:textSize="14sp" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_add_product"
                 android:layout_width="match_parent"

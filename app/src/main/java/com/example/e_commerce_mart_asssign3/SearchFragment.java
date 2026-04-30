@@ -36,7 +36,8 @@ public class SearchFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
 
         sharedPreferences = requireActivity().getSharedPreferences("FastMartPrefs", 0);
-        allProducts = ProductData.getAllProducts();
+        allProducts = new java.util.ArrayList<>();
+        loadAllProductsFromFirebase();
 
         etSearch = view.findViewById(R.id.et_search);
         btnSearch = view.findViewById(R.id.btn_search);
@@ -156,5 +157,24 @@ public class SearchFragment extends Fragment {
         if (view != null) {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
+    }
+
+    private void loadAllProductsFromFirebase() {
+        com.google.firebase.database.FirebaseDatabase.getInstance().getReference("products")
+            .addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+                @Override
+                public void onDataChange(@androidx.annotation.NonNull com.google.firebase.database.DataSnapshot snapshot) {
+                    allProducts.clear();
+                    for (com.google.firebase.database.DataSnapshot data : snapshot.getChildren()) {
+                        Product product = data.getValue(Product.class);
+                        if (product != null) {
+                            product.setProductKey(data.getKey());
+                            allProducts.add(product);
+                        }
+                    }
+                }
+                @Override
+                public void onCancelled(@androidx.annotation.NonNull com.google.firebase.database.DatabaseError error) {}
+            });
     }
 }

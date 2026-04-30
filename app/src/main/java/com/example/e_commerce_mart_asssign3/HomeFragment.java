@@ -63,16 +63,8 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadProducts() {
-        dealsList = ProductData.getDealsOfTheDay();
-        recommendedList = ProductData.getRecommendedProducts();
-
-        // Update static products with favorite status from SQLite
-        for (Product product : dealsList) {
-            product.setFavorite(dbHelper.isFavourite(product.getId()));
-        }
-        for (Product product : recommendedList) {
-            product.setFavorite(dbHelper.isFavourite(product.getId()));
-        }
+        dealsList = new java.util.ArrayList<>();
+        recommendedList = new java.util.ArrayList<>();
 
         // Initialize adapters
         setupAdapters();
@@ -82,34 +74,20 @@ public class HomeFragment extends Fragment {
                 .addValueEventListener(new com.google.firebase.database.ValueEventListener() {
                     @Override
                     public void onDataChange(@androidx.annotation.NonNull com.google.firebase.database.DataSnapshot snapshot) {
-                        // Clear dynamic additions before reloading
-                        // Note: For real-time updates without app restart, we refresh the list
-                        // but we keep static ones if they aren't in Firebase
+                        dealsList.clear();
+                        recommendedList.clear();
                         for (com.google.firebase.database.DataSnapshot data : snapshot.getChildren()) {
                             Product product = data.getValue(Product.class);
                             if (product != null) {
                                 product.setProductKey(data.getKey());
+                                product.setFavorite(dbHelper.isFavourite(product.getId()));
                                 
-                                boolean exists = false;
-                                for (int i = 0; i < recommendedList.size(); i++) {
-                                    if (recommendedList.get(i).getId() == product.getId()) {
-                                        // Update existing
-                                        product.setFavorite(dbHelper.isFavourite(product.getId()));
-                                        recommendedList.set(i, product);
-                                        exists = true;
-                                        break;
-                                    }
-                                }
-                                
-                                if (!exists) {
-                                    product.setFavorite(dbHelper.isFavourite(product.getId()));
-                                    recommendedList.add(product);
-                                }
+                                recommendedList.add(product);
+                                dealsList.add(product);
                             }
                         }
-                        if (recommendedAdapter != null) {
-                            recommendedAdapter.notifyDataSetChanged();
-                        }
+                        if (dealsAdapter != null) dealsAdapter.notifyDataSetChanged();
+                        if (recommendedAdapter != null) recommendedAdapter.notifyDataSetChanged();
                     }
 
                     @Override

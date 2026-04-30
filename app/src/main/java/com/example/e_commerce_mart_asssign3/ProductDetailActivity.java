@@ -40,7 +40,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
         mDatabase = FirebaseDatabase.getInstance().getReference("products");
-        allProducts = ProductData.getAllProducts();
+        allProducts = new java.util.ArrayList<>();
 
         productId = getIntent().getIntExtra("product_id", -1);
         productKey = getIntent().getStringExtra("product_key");
@@ -87,14 +87,6 @@ public class ProductDetailActivity extends AppCompatActivity {
         if (productKey != null && !productKey.isEmpty()) {
             fetchFromFirebase(productKey);
             return;
-        }
-
-        for (Product p : allProducts) {
-            if (p.getId() == productId) {
-                product = p;
-                displayProduct();
-                return;
-            }
         }
 
         mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {

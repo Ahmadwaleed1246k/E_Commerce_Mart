@@ -88,6 +88,9 @@ public class Product {
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
     
+    // Support "category" field from Firebase
+    public void setCategory(String category) { this.type = category; }
+    
     public int getImageResId() { return imageResId; }
     public void setImageResId(int imageResId) { this.imageResId = imageResId; }
     
@@ -98,7 +101,27 @@ public class Product {
     public void setSellerId(String sellerId) { this.sellerId = sellerId; }
     
     public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setImageUrl(String imageUrl) {
+        if (imageUrl != null && imageUrl.contains("drive.google.com") && imageUrl.contains("/view")) {
+            // Automatically convert Google Drive view links to direct image links
+            try {
+                String fileId = "";
+                if (imageUrl.contains("/d/")) {
+                    int start = imageUrl.indexOf("/d/") + 3;
+                    int end = imageUrl.indexOf("/", start);
+                    if (end == -1) end = imageUrl.indexOf("?", start);
+                    fileId = (end == -1) ? imageUrl.substring(start) : imageUrl.substring(start, end);
+                }
+                if (!fileId.isEmpty()) {
+                    this.imageUrl = "https://drive.google.com/uc?id=" + fileId + "&export=download";
+                    return;
+                }
+            } catch (Exception e) {
+                // Fallback to original
+            }
+        }
+        this.imageUrl = imageUrl;
+    }
     
     public String getProductKey() { return productKey; }
     public void setProductKey(String productKey) { this.productKey = productKey; }
