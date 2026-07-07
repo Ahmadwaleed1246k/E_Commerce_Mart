@@ -1,4 +1,4 @@
-# E-Mart: Premium E-Commerce & Marketplace Application
+# FAST Mart: Premium E-Commerce & Marketplace Application
 
 E-Mart is a feature-rich, high-performance Android application designed to bridge the gap between buyers and sellers. Built using native Java (Android SDK) and powered by Firebase, the application offers real-time synchronization, offline caching, and a modern user interface supporting dynamic theme-switching.
 
