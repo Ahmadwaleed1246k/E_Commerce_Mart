@@ -10,7 +10,7 @@ E-Mart is a feature-rich, high-performance Android application designed to bridg
 *   **Dynamic Home Page:** Real-time fetching of "Deals of the Day" (featuring 5 curated top deals) and "Recommended Products" directly from Firebase.
 *   **Personalized Welcome:** Smart welcome banner that retrieves the user's name dynamically from Firebase Realtime Database on login and caches it locally via `SharedPreferences` for fast loading.
 *   **Search Engine:** A robust, real-time product search feature complete with persistent search history caching.
-*   **Favorites & Cart:** Local SQLite persistence for managing shopping carts (with quantity control) and user wishlists.
+*   **Favorites & Cart:** Easily manage shopping carts (with quantity control) and user wishlists.
 *   **Product Detail View:** Beautiful product details page with image zooming, complete specs, and a checkout/purchase simulation dialog.
 *   **Real-time Chat:** An integrated buyer-seller chat system with automatic scroll-to-newest and message persistence.
 
@@ -29,9 +29,9 @@ E-Mart is a feature-rich, high-performance Android application designed to bridg
 
 *   **Development Platform:** Android Studio (Gradle-based build system)
 *   **Programming Language:** Java (Android SDK API 24+)
-*   **Database (Cloud):** Firebase Realtime Database (Real-time product catalog & chat)
+*   **Backend Database:** Firebase Realtime Database (Real-time product catalog, user profiles, orders, and chats)
 *   **Authentication:** Firebase Auth (Email/Password log in & sign up flows)
-*   **Local Caching & Persistence:** SQLite (SQLiteOpenHelper for cart and wishlist items) & SharedPreferences (theme configuration & user credentials caching)
+*   **Local Caching & Persistence:** SQLite (local caching helper for cart and wishlist items) & SharedPreferences (theme configuration & user credentials caching)
 *   **Image Loading & Caching:** Glide library (with customized URL sanitization helpers)
 
 ---
@@ -50,34 +50,61 @@ E-Mart is a feature-rich, high-performance Android application designed to bridg
 *   [SellerHomeFragment.java](file:///c:/Users/dell/Desktop/E_Commerce_Mart_Asssign3/app/src/main/java/com/example/e_commerce_mart_asssign3/SellerHomeFragment.java): Dedicated seller home page displaying the items added by that specific seller.
 *   [AddProductActivity.java](file:///c:/Users/dell/Desktop/E_Commerce_Mart_Asssign3/app/src/main/java/com/example/e_commerce_mart_asssign3/AddProductActivity.java): Seller interface to add a new product.
 
-### 💾 Local Databases & Models
-*   [DatabaseHelper.java](file:///c:/Users/dell/Desktop/E_Commerce_Mart_Asssign3/app/src/main/java/com/example/e_commerce_mart_asssign3/DatabaseHelper.java): Manages local SQLite tables for Favorites and Cart with complete CRUD operations.
+### 💾 Data Models & Helpers
 *   [Product.java](file:///c:/Users/dell/Desktop/E_Commerce_Mart_Asssign3/app/src/main/java/com/example/e_commerce_mart_asssign3/Product.java): Product model containing logic for sanitizing image urls (converting Google Drive links) and type checks.
 *   [Message.java](file:///c:/Users/dell/Desktop/E_Commerce_Mart_Asssign3/app/src/main/java/com/example/e_commerce_mart_asssign3/Message.java): Chat message model holding message body, timestamp, sender, and recipient details.
 *   [CartItem.java](file:///c:/Users/dell/Desktop/E_Commerce_Mart_Asssign3/app/src/main/java/com/example/e_commerce_mart_asssign3/CartItem.java) & [Order.java](file:///c:/Users/dell/Desktop/E_Commerce_Mart_Asssign3/app/src/main/java/com/example/e_commerce_mart_asssign3/Order.java): Struct models for shopping cart items and historical purchases.
 
 ---
 
-## 🗄 Database Schemas
+## 🗄 Firebase Realtime Database Structure
 
-### SQLite Local Storage (`FastMart.db`)
+The application is integrated with **Firebase Realtime Database** for account profiles, orders, and real-time support chats.
 
-#### 🌟 `favourites` Table
-*   `id` (INTEGER, Primary Key) - Product identifier
-*   `name` (TEXT) - Name of product
-*   `price` (TEXT) - Product price
-*   `image_url` (TEXT) - Cloud image URL (if any)
-*   `res_id` (INTEGER) - Local fallback drawable resource ID
-*   `product_key` (TEXT) - Unique Firebase database reference key
+### 📁 Database Nodes
 
-#### 🛒 `cart` Table
-*   `id` (INTEGER, Primary Key) - Product identifier
-*   `name` (TEXT) - Name of product
-*   `price` (TEXT) - Product price
-*   `quantity` (INTEGER) - Quantity added to cart
-*   `image_url` (TEXT) - Cloud image URL (if any)
-*   `res_id` (INTEGER) - Local fallback drawable resource ID
-*   `product_key` (TEXT) - Unique Firebase database reference key
+#### 1. `products/`
+Stores all products added by sellers and default catalog.
+*   `id` (Integer) - Product identifier
+*   `name` (String) - Product name
+*   `price` (String) - Current sale price
+*   `originalPrice` (String) - Original price before discount (if any)
+*   `description` (String) - Detailed product description
+*   `type` (String) - Product category (e.g. clothing, electronics)
+*   `imageUrl` (String) - Image URL (supports Google Drive share links)
+*   `sellerId` (String) - User ID of the seller who added the product
+
+#### 2. `users/`
+Stores user profile information.
+*   `uid` (String) - Unique Firebase Authentication User ID
+*   `name` (String) - Full name
+*   `email` (String) - Registered email address
+*   `accountType` (String) - Account type (`buyer` or `seller`)
+*   `phone` (String) - Contact phone number
+*   `dob` (String) - Date of birth
+*   `gender` (String) - Gender (`Male` or `Female`)
+*   `address` (String) - Shipping address
+*   `country` (String) - Registered country
+
+#### 3. `chats/`
+Stores message rooms for real-time customer support.
+*   `{chatRoomId}/` - Room ID generated from `userId1_userId2` (alphabetically sorted)
+    *   `{messageId}/`
+        *   `senderId` (String) - UID of sender
+        *   `receiverId` (String) - UID of recipient
+        *   `message` (String) - Message body text
+        *   `timestamp` (Long) - Message epoch timestamp
+
+#### 4. `orders/`
+Stores historical orders placed by buyers.
+*   `{userId}/`
+    *   `{orderId}/`
+        *   `orderId` (String) - Unique order identifier (e.g. `ORD-...`)
+        *   `userId` (String) - UID of buyer
+        *   `orderDate` (String) - Timestamp string
+        *   `totalAmount` (Double) - Grand total of order
+        *   `status` (String) - Status of order (e.g., `Processing`)
+        *   `items/` - List of purchased products
 
 ---
 
