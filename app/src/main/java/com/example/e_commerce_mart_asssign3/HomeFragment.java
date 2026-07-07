@@ -47,9 +47,34 @@ public class HomeFragment extends Fragment {
 
         if (userName != null && !userName.isEmpty()) {
             String capitalizedName = userName.substring(0, 1).toUpperCase() + userName.substring(1).toLowerCase();
-            tvWelcome.setText("Hello, " + capitalizedName + "!");
+            tvWelcome.setText("Hello " + capitalizedName);
         } else {
-            tvWelcome.setText("Hello, User!");
+            tvWelcome.setText("Hello User");
+        }
+
+        // Fetch the user's name from Firebase Database in real-time
+        com.google.firebase.auth.FirebaseAuth auth = com.google.firebase.auth.FirebaseAuth.getInstance();
+        com.google.firebase.auth.FirebaseUser user = auth.getCurrentUser();
+        if (user != null) {
+            String currentUserId = user.getUid();
+            com.google.firebase.database.FirebaseDatabase.getInstance().getReference("users")
+                    .child(currentUserId).child("name")
+                    .addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+                        @Override
+                        public void onDataChange(@androidx.annotation.NonNull com.google.firebase.database.DataSnapshot snapshot) {
+                            if (snapshot.exists()) {
+                                String name = snapshot.getValue(String.class);
+                                if (name != null && !name.isEmpty()) {
+                                    String capitalizedName = name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
+                                    tvWelcome.setText("Hello " + capitalizedName);
+                                    sharedPreferences.edit().putString(PREF_USER_NAME, name).apply();
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@androidx.annotation.NonNull com.google.firebase.database.DatabaseError error) {}
+                    });
         }
 
         loadProducts();
@@ -83,7 +108,10 @@ public class HomeFragment extends Fragment {
                                 product.setFavorite(dbHelper.isFavourite(product.getId()));
                                 
                                 recommendedList.add(product);
-                                dealsList.add(product);
+                                
+                                if (dealsList.size() < 5) {
+                                    dealsList.add(product);
+                                }
                             }
                         }
                         if (dealsAdapter != null) dealsAdapter.notifyDataSetChanged();
