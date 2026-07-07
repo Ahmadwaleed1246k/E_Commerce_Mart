@@ -19,7 +19,7 @@
                 android:id="@+id/tv_welcome"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Hello, User!"
+                android:text="Hello User"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_main"
